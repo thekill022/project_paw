@@ -2,7 +2,7 @@ const db = require('../infrastructure/database/connection');
 const responsAPI = require('../infrastructure/reponse');
 
 exports.getAllproduct = (req, res) => {
-    const sql = 'SELECT * FROM product'
+    const sql = 'SELECT * FROM produk'
     db.query(sql, (err, result) => {
         if (err) {
             return responsAPI(500,'No data found','Kegagalan menyambungkan ke Datbase',res)
@@ -18,7 +18,7 @@ exports.getAllproduct = (req, res) => {
 
 exports.getProductByid = (req, res) => {
     const id = req.params.id
-    const sql = 'SELECT * FROM product WHERE id_product =?'
+    const sql = 'SELECT * FROM product WHERE id_produk =?'
     db.query(sql, [id], (err, result) => {
         if (err) {
             return responsAPI(500,'No data found','Kegagalan menyambungkan ke Datbase',res)
@@ -32,26 +32,56 @@ exports.getProductByid = (req, res) => {
     })
 }
 
+// Controller for creating transaksi
 exports.createTransaksi = (req, res) => {
-    const {metode, idkaryawan} = req.body
-    const sql = 'INSERT INTO transaksi (metodeBayar, idKaryawan) VALUES (?,?)'
+    // Ambil metode pembayaran dan idkaryawan dari request body dan session
+    const { metode } = req.body;
+    const idkaryawan = req.session.user.id;  // Ambil idkaryawan dari session
+  
+    if (!idkaryawan) {
+      return res.status(400).json({
+        message: "User not logged in",
+        success: false
+      });
+    }
+  
+    // SQL query untuk membuat transaksi
+    const sql = 'INSERT INTO transaksi (tanggal, metodeBayar, idKaryawan) VALUES (NOW(),?,?)';
     db.query(sql, [metode, idkaryawan], (err, result) => {
+      if (err) {
+        return res.status(500).json({
+          message: 'Failed to create transaksi',
+          error: err
+        });
+      } else {
+        return res.status(201).json({
+          message: 'Berhasil membuat transaksi',
+          result: result
+        });
+      }
+    });
+  };
+  
+  exports.riwayatTransaksi = (req, res) => {
+    const sql = "select * from riwayat"
+    db.query(sql, (err, result) => {
         if (err) {
-            return responsAPI(500,'Failed to create transaksi','Kegagalan membuat transaksi',res)
-        }else {
-            return responsAPI(201,result,'Berhasil membuat transaksi',res)
+          return responsAPI(500, 'Failed to fetch :' + err, `Kegagalan membuat list item ${err}`, res);
+        } else {
+          return responsAPI(201, result, 'Berhasil membuat list item', res);
         }
-    }) 
-}
-
-exports.createListitem = (req,res) =>{
-    const {idtransaksi,idproduk,jumlah} = req.body
-    const sql = 'INSERT INTO list_item (idTransaksi, idProduk, jumlah) VALUES (?,?,?)'
-    db.query(sql, [idtransaksi,idproduk,jumlah], (err, result) => {
-        if (err) {
-            return responsAPI(500,'Failed to create list item','Kegagalan membuat list item',res)
-        }else {
-            return responsAPI(201,result,'Berhasil membuat list item',res)
-        }
-    })
-}
+      });
+  }
+  // Controller for creating listitem
+  exports.createListitem = (req, res) => {
+    const { idtransaksi, idproduk, jumlah } = req.body;
+    const sql = 'INSERT INTO listitem (idTransaksi, idProduk, jumlah) VALUES (?,?,?)';
+    db.query(sql, [idtransaksi, idproduk, jumlah], (err, result) => {
+      if (err) {
+        return responsAPI(500, 'Failed to create list item', `Kegagalan membuat list item ${err}`, res);
+      } else {
+        return responsAPI(201, result, 'Berhasil membuat list item', res);
+      }
+    });
+  };
+  

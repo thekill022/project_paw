@@ -4,16 +4,14 @@ const responsAPI = require('../infrastructure/reponse');
 
 exports.isAuthicated = (req, res) => {
     const { username, password } = req.body;
-    
+
     if (!username || !password) {
-        return res.status(400).json({
-            success: false,
-            message: 'Username and password are required'
-        });
+        return res.redirect('/loginpage')
     }
 
     // Query admin
-    db.query('select * from admin where username = ? and password = ?', 
+    db.query(
+        'SELECT * FROM admin WHERE username = ? AND password = ?',
         [username, password],
         (err, adminResult) => {
             if (err) {
@@ -21,22 +19,20 @@ exports.isAuthicated = (req, res) => {
             }
 
             if (adminResult.length > 0) {
-                req.user = {
+                // Simpan data ke session
+                req.session.user = {
                     id: adminResult[0].idAdmin,
                     username: adminResult[0].username,
                     name: adminResult[0].namaAdmin,
-                    role: 'admin'
-                }
-                return res.json({
-                    success: true,
-                    message: 'Login successful',
-                    redirectUrl: '/admin',
-                    user: req.user
-                });
+                    role: 'admin',
+                };
+                console.log(req.session.user)
+                return res.redirect('/admin/dashboard')
             }
 
             // Query karyawan jika admin tidak ditemukan
-            db.query('select * from karyawan where username =? and password =?', 
+            db.query(
+                'SELECT * FROM karyawan WHERE username = ? AND password = ?',
                 [username, password],
                 (err, karyawanResult) => {
                     if (err) {
@@ -44,42 +40,50 @@ exports.isAuthicated = (req, res) => {
                     }
 
                     if (karyawanResult.length > 0) {
-                        req.user = {
+                        // Simpan data ke session
+                        req.session.user = {
                             id: karyawanResult[0].idKaryawan,
                             username: karyawanResult[0].username,
                             name: karyawanResult[0].namaKaryawan,
-                            role: 'karyawan'
-                        }
-                        return res.json({
-                            success: true,
-                            message: 'Login successful',
-                            redirectUrl: '/karyawan',
-                            user: req.user
-                        });
+                            role: 'karyawan',
+                        };
+                        
+                    return res.redirect('/karyawan/dashboard')
                     }
 
                     // Jika tidak ada user yang ditemukan
                     return res.status(401).json({
                         success: false,
                         message: 'Invalid credentials',
-                        redirectUrl: '/login'
+                        redirectUrl: '/login',
                     });
-                });
-        });
-}
+                }
+            );
+        }
+    );
+};
 
 exports.validateKaryawan = (req, res, next) => {
-    if(req.user && req.user.role == 'karyawan') {
+    if (req.session.user && req.session.user.role === 'karyawan') {
         next();
     } else {
-        res.redirect('/login')
+        res.redirect('/login');
     }
-}
+};
 
 exports.validateAdmin = (req, res, next) => {
-    if(req.user && req.user.role == 'admin') {
+    if (req.session.user && req.session.user.role === 'admin') {
         next();
     } else {
-        res.redirect('/login')
+        res.redirect('/login');
     }
-}  
+};
+
+exports.logout = (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).send('Failed to log out');
+      }
+      res.redirect('/login')
+    });
+  };

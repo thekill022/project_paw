@@ -2,10 +2,10 @@ const db = require('../infrastructure/database/connection');
 const responsAPI = require('../infrastructure/reponse');
 
 exports.getAllproduct = (req,res) =>{
-    const sql = 'SELECT * FROM product' 
+    const sql = 'SELECT * FROM produk' 
     db.query(sql, (err, result) => {
         if(err){
-            return responsAPI(500,'No data found','Kegagalan menyambungkan ke database',res)
+            return responsAPI(500,'No data found','Kegagalan menyambungkan ke database' + err,res)
         }else{
             if(result.length==0){
                 return responsAPI(404,'No data found','Data kosong',res)
@@ -34,7 +34,7 @@ exports.getProductBynama = (req,res) => {
 
 exports.createProduct = (req,res) =>{
     const { namaProduk,kategori,harga } = req.body
-    const sql = 'INSERT INTO product (namaProduk, kategori, harga) VALUES (?,?,?)'
+    const sql = 'INSERT INTO produk (namaProduk, kategori, harga) VALUES (?,?,?)'
     db.query(sql, [namaProduk, kategori, harga], (err, result) => {
         if(err){
             return responsAPI(500,'Failed to create product','Kegagalan membuat product',res)
@@ -47,7 +47,7 @@ exports.createProduct = (req,res) =>{
 exports.updateProduct = (req,res) => {
     const id = req.params.id
     const { namaProduk, kategori, harga } = req.body
-    const sql = 'UPDATE product SET namaProduk =?, kategori =?, harga =? WHERE idProduk =?'
+    const sql = 'UPDATE produk SET namaProduk =?, kategori =?, harga =? WHERE idProduk =?'
     db.query(sql, [namaProduk, kategori, harga, id], (err, result) => {
         if(err){
             return responsAPI(500,'Failed to update product','Kegagalan mengubah product',res)
@@ -63,7 +63,7 @@ exports.updateProduct = (req,res) => {
 
 exports.deleteProduct = (req,res) => {
     const id = req.params.id
-    const sql = 'DELETE FROM product WHERE idProduk =?'
+    const sql = 'DELETE FROM produk WHERE idProduk =?'
     db.query(sql, [id], (err, result) => {
         if(err){
             return responsAPI(500,'Failed to delete product','Kegagalan menghapus product',res)
@@ -153,68 +153,16 @@ exports.deleteKaryawan = (req,res) => {
     })
 }
 
-exports.getAlltransaksi = (req,res) => {
-    const sql = 'SELECT * FROM transaksi'
+exports.riwayatTransaksi = (req, res) => {
+    const sql = "select * from riwayat"
     db.query(sql, (err, result) => {
-        if(err){
-            return responsAPI(500,'No data found','Kegagalan menyambungkan ke database',res)
-        }else{
-            if(result.length==0){
-                return responsAPI(404,'No data found','Data kosong',res)
-            }else{
-                return responsAPI(200,result,'Berhasil mendapatkan semua data transaksi',res)
-            }
-        }
-    })
-}
-
-exports.getTransaksiBynamaKaryawan = (req,res) => {
-    const namakaryawan = req.body
-    const sql = 'SELECT * FROM transaksi WHERE namaKaryawan =?'
-    db.query(sql, [namakaryawan], (err, result) => {
         if (err) {
-            return responsAPI(500,'Failed to get transaksi','Kegagalan mendapatkan data transaksi',res)
-        }else {
-            if (result.length==0){
-                return responsAPI(404,'No data found','Data transaksi dengan karyawan '+ namakaryawan +' tidak ditemukan',res)
-            }else {
-                return responsAPI(200,result,'Berhasil mendapatkan data transaksi',res)
-            }
+          return responsAPI(500, 'Failed to fetch :' + err, `Kegagalan membuat list item ${err}`, res);
+        } else {
+          return responsAPI(201, result, 'Berhasil membuat list item', res);
         }
-    })
-}
-
-exports.getTransaksiBymetodeBayar = (req,res) => {
-    const metodebayar = req.body
-    const sql = 'SELECT * FROM transaksi WHERE metodeBayar =?'
-    db.query(sql, [metodebayar], (err, result) => {
-        if (err) {
-            return responsAPI(500,'Failed to get transaksi','Kegagalan mendapatkan data transaksi',res)
-        }else {
-            if (result.length==0){
-                return responsAPI(404,'No data found','Data transaksi dengan metode pembayaran '+ metodebayar +' tidak ditemukan',res)
-            }else {
-                return responsAPI(200,result,'Berhasil mendapatkan data transaksi',res)
-            }
-        }
-    })
-}
-
-exports.getTransaksiBytanggal = (req,res) => {
-    const tanggal = req.body
-    const sql = 'SELECT * FROM transaksi WHERE tanggal =?'
-    db.query(sql, [tanggal], (err, result) => {
-        if (err) {
-            return responsAPI(500,'Failed to get transaksi','Kegagalan mendapatkan data transaksi',res)
-        }else {
-            if (result.length==0){
-                return responsAPI(404,'No data found','Data transaksi pada tanggal '+ tanggal +' tidak ditemukan',res)
-            }else {
-                return responsAPI(200,result,'Berhasil mendapatkan data transaksi',res)
-            }
-        }
-    })
-}
+      });
+  }
 
 exports.deleteTransaksi = (req,res) => {
     const id = req.params.id
