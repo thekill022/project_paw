@@ -33,8 +33,10 @@
       text-align: center;
     }
     .menu-item-img {
-      width: 100px;
+      width: 200px;
       height: 100px;
+      border-radius: 6px;
+      margin-top: 6px;
       object-fit: cover;
       margin-bottom: 10px;
     }
@@ -48,11 +50,14 @@
       <span class="mx-2">
         <a href="/admin/riwayat" class="away">Riwayat</a>
       </span>
+      <span class="mx-2">
+        <a href="/admin/user" class="away">Akun Kasir</a>
+      </span>
     </div>
     <div class="datetime text-dark">
       <span id="time"></span>
       <span id="date"></span>
-      <span class="fw-bold mx-2" id-data="<%= user.id %>"> Welcome <%= user.username %></span>
+      <span class="fw-bold mx-2" id-data="<%= user.id %>"> Welcome <%= user.name %></span>
       <form action="http://localhost:8080/logout" class="d-inline" method="post">
         <button type="submit" class="logout p-2">Logout</button>
       </form>
@@ -61,11 +66,16 @@
 
   <main>
     <div class="sidebar">
-      <button class="category-btn active" data-category="coffee">Coffee</button>
-      <button class="category-btn" data-category="beverages">Beverages</button>
-      <button class="category-btn" data-category="snack">Snack</button>
+      <button class="category-btn active" data-category="coffee">
+        <img src="/images/coffe.png" alt="">
+        Coffee</button>
+      <button class="category-btn" data-category="beverages">
+        <img src="/images/beverages.png" alt="">
+        Beverages</button>
+      <button class="category-btn" data-category="snack">
+        <img src="/images/snack.png" alt="">
+        Snack</button>
     </div>
-
     <div class="menu">
       <div id="menuItems" class="menu-container"></div>
     </div>
@@ -82,15 +92,17 @@
     fetch("http://localhost:8080/admin/product")
       .then(res => res.json())
       .then(res => {
-        res.data.forEach(item => {
-          if (item.kategori === "coffe") {
-            menuData.coffee.push(item);
-          } else if (item.kategori === "beverages") {
-            menuData.beverages.push(item);
-          } else {
-            menuData.snack.push(item);
-          }
-        });
+        if (res.response != 404) {
+          res.data.forEach(item => {
+            if (item.kategori === "coffe") {
+              menuData.coffee.push(item);
+            } else if (item.kategori === "beverages") {
+              menuData.beverages.push(item);
+            } else {
+              menuData.snack.push(item);
+            }
+          });
+        }
 
         let currentCategory = "coffee";
         const menuContainer = document.getElementById("menuItems");
@@ -107,12 +119,12 @@
     const menuItem = document.createElement("div");
     menuItem.className = "menu-item";
     menuItem.innerHTML = `
-      <img src="default-coffee.png" alt="${item.namaProduk}" class="menu-item-img">
+      <img src="../images/${item.link}" alt="${item.namaProduk}" width="60" class="menu-item-img">
       <h3>${item.namaProduk}</h3>
       <p>Rp.${item.harga.toLocaleString()}</p>
       <div>
-        <button class="btn btn-warning btn-sm" onclick="showEditProductForm(${item.id}, '${item.namaProduk}', '${item.kategori}', ${item.harga})">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="showDeleteConfirmation(${item.id}, '${item.namaProduk}')">Delete</button>
+        <button class="edit" onclick="showEditProductForm(${item.idProduk}, '${item.namaProduk}', '${item.kategori}', ${item.harga})">Edit</button>
+        <button class="delete" onclick="showDeleteConfirmation(${item.idProduk}, '${item.namaProduk}')">Delete</button>
       </div>
     `;
     menuContainer.appendChild(menuItem);
@@ -143,16 +155,16 @@ function showAddProductForm() {
             <h5 class="modal-title" id="addProductModalLabel">Tambah Produk Baru</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <form id="addProductForm">
-            <div class="modal-body">
-              <div class="mb-3">
+          <form id="addProductForm" enctype="multipart/form-data">
+            <div class="modal-body">  
+            <div class="mb-3">
                 <label for="productName" class="form-label">Nama Produk</label>
                 <input type="text" class="form-control" id="productName" name="namaProduk" required>
               </div>
               <div class="mb-3">
                 <label for="productCategory" class="form-label">Kategori</label>
                 <select class="form-select" id="productCategory" name="kategori" required>
-                  <option value="coffee">Coffee</option>
+                  <option value="coffe">Coffee</option>
                   <option value="beverages">Beverages</option>
                   <option value="snack">Snack</option>
                 </select>
@@ -161,10 +173,14 @@ function showAddProductForm() {
                 <label for="productPrice" class="form-label">Harga</label>
                 <input type="number" class="form-control" id="productPrice" name="harga" required>
               </div>
+              <div class="mb-3">
+                <label for="productImage" class="form-label">Gambar Produk</label>
+                <input type="file" class="form-control" id="image" name="image" required>
+              </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-              <button type="submit" class="btn btn-primary">Tambah Produk</button>
+              <button type="button" class="delete" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="edit">Tambah Produk</button>
             </div>
           </form>
         </div>
@@ -178,23 +194,18 @@ function showAddProductForm() {
   // Handle form submission
   document.getElementById("addProductForm").addEventListener("submit", function (e) {
     e.preventDefault();
-    const formData = new FormData(this);
+    const formData = new FormData(this); // Ambil data form termasuk file
+
     fetch("http://localhost:8080/admin/product", {
       method: "POST",
-      body: JSON.stringify({
-        namaProduk: formData.get("namaProduk"),
-        kategori: formData.get("kategori"),
-        harga: parseInt(formData.get("harga"), 10),
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      body: formData, // Kirim sebagai multipart/form-data
     })
       .then((response) => {
         if (response.ok) {
           alert("Produk berhasil ditambahkan!");
           location.reload(); // Muat ulang halaman untuk memperbarui daftar menu
         } else {
+          console.log(response)
           alert("Gagal menambahkan produk.");
         }
       })
@@ -204,6 +215,7 @@ function showAddProductForm() {
       });
   });
 }
+
 
 function showEditProductForm(id, namaProduk, kategori, harga) {
   const formHTML = `
@@ -223,7 +235,7 @@ function showEditProductForm(id, namaProduk, kategori, harga) {
               <div class="mb-3">
                 <label for="editProductCategory" class="form-label">Kategori</label>
                 <select class="form-select" id="editProductCategory" name="kategori" required>
-                  <option value="coffee" ${kategori === "coffee" ? "selected" : ""}>Coffee</option>
+                  <option value="coffe" ${kategori === "coffe" ? "selected" : ""}>Coffee</option>
                   <option value="beverages" ${kategori === "beverages" ? "selected" : ""}>Beverages</option>
                   <option value="snack" ${kategori === "snack" ? "selected" : ""}>Snack</option>
                 </select>
@@ -234,8 +246,8 @@ function showEditProductForm(id, namaProduk, kategori, harga) {
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-              <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+              <button type="button" class="delete" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="edit">Simpan Perubahan</button>
             </div>
           </form>
         </div>
@@ -263,6 +275,7 @@ function showEditProductForm(id, namaProduk, kategori, harga) {
     })
       .then((response) => {
         if (response.ok) {
+        console.log(id)
           alert("Produk berhasil diperbarui!");
           location.reload(); // Refresh halaman untuk melihat perubahan
         } else {
@@ -277,6 +290,13 @@ function showEditProductForm(id, namaProduk, kategori, harga) {
 }
 
 function showDeleteConfirmation(id, namaProduk) {
+
+    let modalExist = document.querySelector('#deleteProductModal')
+    console.log(modalExist)
+    if(modalExist) {
+        modalExist.remove()
+    }
+
   const confirmationHTML = `
     <div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
       <div class="modal-dialog">
@@ -289,8 +309,8 @@ function showDeleteConfirmation(id, namaProduk) {
             Apakah Anda yakin ingin menghapus produk <strong>${namaProduk}</strong>?
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-            <button type="button" class="btn btn-danger" onclick="deleteProduct(${id})">Hapus</button>
+            <button type="button" class="delete" data-bs-dismiss="modal">Batal</button>
+            <button type="button" class="edit" onclick="deleteProduct(${id})">Hapus</button>
           </div>
         </div>
       </div>

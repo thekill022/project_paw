@@ -28,6 +28,7 @@ main {
 .sidebar {
   background-color: #f4f4f4;
   width: 200px;
+  min-height: 100vh;
   padding: 1em;
   display: flex;
   flex-direction: column;
@@ -93,6 +94,9 @@ main {
 }
 
 .order-summary {
+  position: absolute;
+  right: 0;
+  min-height: 100vh;
   background-color: #f4f4f4;
   padding: 1em;
   width: 300px;
@@ -188,4 +192,22 @@ main {
   font-size: 18px;
   margin-top: 10px;
   text-align: center;
+}
+
+.edit {
+  border: none;
+  background-color: var(--primary);
+  color: white;
+  padding: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-radius: 10px;
+}
+
+.delete {
+  border: 1px solid var(--primary);
+  background-color: transparent;
+  color: var(--primary);
+  padding: 10px;
+  border-radius: 10px;
 }

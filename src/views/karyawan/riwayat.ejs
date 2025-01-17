@@ -15,6 +15,12 @@
         color: black;
         text-decoration: none;
     }
+    .logout {
+      background-color: #904b03;
+      color: white;
+      border: none;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
@@ -33,7 +39,10 @@
     <div class="datetime text-dark">
       <span id="time"></span>
       <span id="date"></span>
-      <span class="fw-bold mx-2" id-data="<%= user.id %>"> Welcome <%= user.username %></span>
+      <span class="fw-bold mx-2" id-data="<%= user.id %>"> Welcome <%= user.name %></span>
+      <form action="http://localhost:8080/logout" class="d-inline" method="post">
+        <button type="submit" class="logout p-2">Logout</button>
+      </form>
     </div>
   </header>
 
@@ -50,7 +59,9 @@ function updateDateTime() {
     }
 
 
-    fetch('http://localhost:8080/karyawan/transaksi')
+    fetch('http://localhost:8080/karyawan/transaksi', {
+      method: 'GET',
+    })
     .then(res => res.json())
     .then(res => {
         for (let i = 0; i < res.data.length; i++) {

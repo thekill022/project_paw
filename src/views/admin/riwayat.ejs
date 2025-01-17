@@ -15,6 +15,12 @@
         color: black;
         text-decoration: none;
     }
+    .logout {
+      background-color: #904b03;
+      color: white;
+      border: none;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
@@ -22,18 +28,26 @@
     <h1 class="text-dark">Dashboard</h1>
     <div class="text-dark fw-bold">
         <span class="mx-2">
-        <a href="/karyawan/dashboard" class="away">
+        <a href="/admin/dashboard" class="away">
             Home
         </a>
         </span>
         <span class="mx-2 navigasi">
             Riwayat
         </span>
+        <span class="mx-2">
+        <a href="/admin/user" class="away">
+            Akun Kasir
+        </a>
+        </span>
     </div>
     <div class="datetime text-dark">
       <span id="time"></span>
       <span id="date"></span>
-      <span class="fw-bold mx-2" id-data="<%= user.id %>"> Welcome <%= user.username %></span>
+      <span class="fw-bold mx-2" id-data="<%= user.id %>"> Welcome <%= user.name %></span>
+      <form action="http://localhost:8080/logout" class="d-inline" method="post">
+        <button type="submit" class="logout p-2">Logout</button>
+      </form>
     </div>
   </header>
 
@@ -62,7 +76,7 @@ function updateDateTime() {
                 <p><strong>Nama Kasir:</strong>${res.data[i].nama_kasir}</p>
                 <p><strong>Metode Bayar:</strong>${res.data[i].metode_bayar}</p>
                 <p class="total"><strong>Total:</strong>${res.data[i].total}</p>
-                <button class="btn btn-danger" onclick="confirmDelete(${res.data[i].id_transaksi})">
+                <button class="delete" onclick="confirmDelete(${res.data[i].id_transaksi})">
                     Hapus Riwayat
                 </button>
             </div>

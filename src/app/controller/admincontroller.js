@@ -2,7 +2,7 @@ const db = require('../infrastructure/database/connection');
 const responsAPI = require('../infrastructure/reponse');
 
 exports.getAllproduct = (req,res) =>{
-    const sql = 'SELECT * FROM produk' 
+    const sql = 'SELECT * FROM product' 
     db.query(sql, (err, result) => {
         if(err){
             return responsAPI(500,'No data found','Kegagalan menyambungkan ke database' + err,res)
@@ -34,14 +34,36 @@ exports.getProductBynama = (req,res) => {
 
 exports.createProduct = (req,res) =>{
     const { namaProduk,kategori,harga } = req.body
-    const sql = 'INSERT INTO produk (namaProduk, kategori, harga) VALUES (?,?,?)'
-    db.query(sql, [namaProduk, kategori, harga], (err, result) => {
+    if (!req.file) {
+        const err = new Error('Please upload a file')
+        throw err;
+    }
+    const image = req.file.filename
+    console.log(image)
+    const img = 'INSERT INTO foto(link) values(?)'
+
+    db.query(img, [image], (err, result) => {
         if(err){
             return responsAPI(500,'Failed to create product','Kegagalan membuat product',res)
         }else{
-            return responsAPI(201,result,'Berhasil membuat product',res)
+            db.query('SELECT idFoto FROM foto WHERE link = ?', [image], (err, result) => {  
+                if(err){
+                    return responsAPI(500,'Failed to create product','Kegagalan membuat product',res)
+                }else{
+                    const idFoto = result[0].idFoto
+                    const sql = 'INSERT INTO produk(namaProduk, kategori, harga, linkFoto) VALUES (?,?,?,?)'
+                    db.query(sql, [namaProduk, kategori, harga, idFoto], (err, result) => {
+                        if(err){
+                            return responsAPI(500,'Failed to create product','Kegagalan membuat product',res)
+                        }else{
+                            return responsAPI(201,result,'Berhasil membuat product',res)
+                        }
+                    })
+                }
+            })    
         }
     })
+
 }
 
 exports.updateProduct = (req,res) => {
@@ -63,7 +85,7 @@ exports.updateProduct = (req,res) => {
 
 exports.deleteProduct = (req,res) => {
     const id = req.params.id
-    const sql = 'DELETE FROM produk WHERE idProduk =?'
+    const sql = 'DELETE FROM foto WHERE idFoto = (select linkFoto from produk where idProduk = ?); DELETE FROM produk WHERE idProduk =?'
     db.query(sql, [id], (err, result) => {
         if(err){
             return responsAPI(500,'Failed to delete product','Kegagalan menghapus product',res)
@@ -81,7 +103,7 @@ exports.getAllkaryawan = (req,res) => {
     const sql = 'SELECT * FROM karyawan'
     db.query(sql, (err, result) => {
         if(err){
-            return responsAPI(500,'No data found','Kegagalan menyambungkan ke database',res)
+            return responsAPI(500,'No data found','Kegagalan menyambungkan ke database' + err,res)
         }else{
             if(result.length==0){
                 return responsAPI(404,'No data found','Data kosong',res)
@@ -93,8 +115,8 @@ exports.getAllkaryawan = (req,res) => {
 }
 
 exports.getKaryawanBynama = (req,res) => {
-    const nama = req.body.nama
-    const sql = 'SELECT * FROM karyawan WHERE namaKaryawan =?'
+    const nama = req.body.id
+    const sql = 'SELECT * FROM karyawan WHERE idKaryawan =?'
     db.query(sql, [nama], (err, result) => {
         if (err) {
             return responsAPI(500,'Failed to get karyawan','Kegagalan mendapatkan data karyawan',res)
@@ -115,7 +137,7 @@ exports.createKaryawan = (req,res) =>{
         if(err){
             return responsAPI(500,'Failed to create karyawan','Kegagalan membuat karyawan',res)
         }else{
-            return responsAPI(201,result,'Berhasil membuat karyawan',res)
+         res.redirect('/admin/user')
         }
     })
 }
@@ -139,7 +161,7 @@ exports.updateKaryawan = (req,res) => {
 
 exports.deleteKaryawan = (req,res) => {
     const id = req.params.id
-    const sql = 'DELETE FROM karyawan WHERE idKaryawan =?'
+    const sql = 'DELETE FROM karyawan WHERE idKaryawan = ?'
     db.query(sql, [id], (err, result) => {
         if(err){
             return responsAPI(500,'Failed to delete karyawan','Kegagalan menghapus karyawan',res)

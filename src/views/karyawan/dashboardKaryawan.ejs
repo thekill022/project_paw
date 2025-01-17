@@ -37,7 +37,7 @@
     <div class="datetime text-dark">
       <span id="time"></span>
       <span id="date"></span>
-      <span class="fw-bold mx-2" id-data="<%= user.id %>"> Welcome <%= user.username %></span>
+      <span class="fw-bold mx-2" id-data="<%= user.id %>"> Welcome <%= user.name %></span>
       <form action="http://localhost:8080/logout" class="d-inline" method="post">
           <button type="submit" class="logout p-2">Logout</button>
       </form>
@@ -46,9 +46,24 @@
 
   <main>
     <div class="sidebar">
-      <button class="category-btn active" data-category="coffee">Coffee</button>
-      <button class="category-btn" data-category="beverages">Beverages</button>
-      <button class="category-btn" data-category="snack">Snack</button>
+      <button class="category-btn active" data-category="coffee">
+        <img src="/images/coffe.png" alt="" width="50">
+        <div>
+            Coffee
+        </div>
+    </button>
+      <button class="category-btn" data-category="beverages">
+        <img src="/images/beverages.png" alt="" width="50">
+        <div>
+            Beverages
+        </div>
+    </button>
+      <button class="category-btn" data-category="snack">
+        <img src="/images/snack.png" alt="" width="50">
+        <div>
+            Snack
+        </div>
+    </button>
     </div>
 
     <div class="menu">
@@ -132,7 +147,7 @@ fetch("http://localhost:8080/karyawan/product")
         const menuItem = document.createElement("div");
         menuItem.className = "menu-item";
         menuItem.innerHTML = `
-          <img src="default-coffee.png" alt="${item.namaProduk}" class="menu-item-img">
+          <img src="../images/${item.link}" alt="${item.namaProduk}" class="menu-item-img">
           <h3>${item.namaProduk}</h3>
           <p>Rp.${item.harga.toLocaleString()}</p>
         `;
@@ -163,27 +178,45 @@ fetch("http://localhost:8080/karyawan/product")
     }
 
     // Update order list
-    function updateOrderList() {
-      orderList.innerHTML = "";
-      orders.forEach(order => {
-        const orderItem = document.createElement("div");
-        orderItem.className = "order-item";
-        orderItem.innerHTML = `
-          <div>
-            <h3>${order.name}</h3>
-            <p>Rp.${order.price.toLocaleString()} x ${order.quantity}</p>
-          </div>
-          <div>
-            <p>Rp.${order.totalPrice.toLocaleString()}</p>
-          </div>
-        `;
-        orderList.appendChild(orderItem);
-      });
+    <!-- Update Order List -->
+function updateOrderList() {
+  orderList.innerHTML = "";
+  orders.forEach((order, index) => {
+    const orderItem = document.createElement("div");
+    orderItem.className = "order-item";
+    orderItem.innerHTML = `
+      <div>
+        <h3>${order.name}</h3>
+        <p>Rp.${order.price.toLocaleString()} x ${order.quantity}</p>
+      </div>
+      <div>
+        <p>Rp.${order.totalPrice.toLocaleString()}</p>
+        <button class="edit btn-sm remove-order-btn" data-index="${index}">Hapus</button>
+      </div>
+    `;
+    orderList.appendChild(orderItem);
+  });
 
-      subTotalElement.textContent = subTotal.toLocaleString();
-      totalElement.textContent = subTotal.toLocaleString();
-      document.querySelector('.totalbayar').textContent = 'Rp.' + subTotal.toLocaleString()
-    }
+  subTotalElement.textContent = subTotal.toLocaleString();
+  totalElement.textContent = subTotal.toLocaleString();
+  document.querySelector('.totalbayar').textContent = 'Rp.' + subTotal.toLocaleString();
+
+  // Add event listeners to remove buttons
+  document.querySelectorAll(".remove-order-btn").forEach(button => {
+    button.addEventListener("click", (event) => {
+      const index = event.target.getAttribute("data-index");
+      removeOrder(index);
+    });
+  });
+}
+
+function removeOrder(index) {
+  const removedOrder = orders[index];
+  subTotal -= removedOrder.totalPrice;
+  orders.splice(index, 1);
+  updateOrderList();
+}
+
 
     // Handle category button clicks
     categoryButtons.forEach(button => {
