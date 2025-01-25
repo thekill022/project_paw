@@ -15,7 +15,7 @@ describe('POST /admin/product', () => {
     it('should create a product and return 201 status', async () => {
         const mockProduct = {
             namaProduk: 'Test Product',
-            kategori: 'Test Category',
+            kategori: 'Snack',
             harga: 1000
         };
         const mockFile = {
