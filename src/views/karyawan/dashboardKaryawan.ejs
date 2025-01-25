@@ -21,6 +21,26 @@
         border: none;
         border-radius: 10px;
     }
+    .menu-item {
+      display: flex;
+      height: 230px;
+      flex-direction: column;
+      align-items: center;
+      margin: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      max-width: 200px;
+      text-align: center;
+    }
+    .menu-item-img {
+      width: 200px;
+      height: 100px;
+      border-radius: 6px;
+      margin-top: 6px;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -148,7 +168,7 @@ fetch("http://localhost:8080/karyawan/product")
         menuItem.className = "menu-item";
         menuItem.innerHTML = `
           <img src="../images/${item.link}" alt="${item.namaProduk}" class="menu-item-img">
-          <h3>${item.namaProduk}</h3>
+          <h4>${item.namaProduk}</h4>
           <p>Rp.${item.harga.toLocaleString()}</p>
         `;
         menuItem.addEventListener("click", () => addToOrder(item));

@@ -111,7 +111,7 @@
         function renderMenu(category) {
   menuContainer.innerHTML = `
     <div class="menu-item" onclick="showAddProductForm()">
-      <img src="https://img.icons8.com/?size=512&id=83136&format=png" alt="Tambah Produk" class="menu-item-img">
+      <img src="https://img.icons8.com/?size=512&id=83136&format=png" alt="Tambah Produk" class="menu-item-img" style="object-fit: contain;">
       <h3>Tambah Produk</h3>
     </div>
   `;
@@ -120,7 +120,7 @@
     menuItem.className = "menu-item";
     menuItem.innerHTML = `
       <img src="../images/${item.link}" alt="${item.namaProduk}" width="60" class="menu-item-img">
-      <h3>${item.namaProduk}</h3>
+      <h4>${item.namaProduk}</h4>
       <p>Rp.${item.harga.toLocaleString()}</p>
       <div>
         <button class="edit" onclick="showEditProductForm(${item.idProduk}, '${item.namaProduk}', '${item.kategori}', ${item.harga})">Edit</button>

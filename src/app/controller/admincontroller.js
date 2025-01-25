@@ -66,26 +66,26 @@ exports.createProduct = (req,res) =>{
 
 }
 
-exports.updateProduct = (req,res) => {
-    const id = req.params.id
-    const { namaProduk, kategori, harga } = req.body
-    const sql = 'UPDATE produk SET namaProduk =?, kategori =?, harga =? WHERE idProduk =?'
+exports.updateProduct = (req, res) => {
+    const id = req.params.id;
+    const { namaProduk, kategori, harga } = req.body;
+    const sql = 'UPDATE produk SET namaProduk = ?, kategori = ?, harga = ? WHERE idProduk = ?';
     db.query(sql, [namaProduk, kategori, harga, id], (err, result) => {
-        if(err){
-            return responsAPI(500,'Failed to update product','Kegagalan mengubah product',res)
-        }else{
-            if(result.affectedRows==0){
-                return responsAPI(404,'No data found','Data product dengan ID '+ id +' tidak ditemukan',res)
-            }else{
-                return responsAPI(200,result,'Berhasil mengubah product',res)
+        if (err) {
+            return responsAPI(500, 'Failed to update product', 'Kegagalan mengubah product', res);
+        } else {
+            if (result.affectedRows == 0) {
+                return responsAPI(404, 'No data found', 'Data product dengan ID ' + id + ' tidak ditemukan', res);
+            } else {
+                return responsAPI(200, result, 'Berhasil mengubah product', res);
             }
         }
-    })
-}
+    });
+};
 
 exports.deleteProduct = (req,res) => {
     const id = req.params.id
-    const sql = 'DELETE FROM foto WHERE idFoto = (select linkFoto from produk where idProduk = ?); DELETE FROM produk WHERE idProduk =?'
+    const sql = 'DELETE FROM foto WHERE idFoto = (select linkFoto from produk where idProduk = ?);'
     db.query(sql, [id], (err, result) => {
         if(err){
             return responsAPI(500,'Failed to delete product','Kegagalan menghapus product',res)
@@ -93,7 +93,13 @@ exports.deleteProduct = (req,res) => {
             if(result.affectedRows==0){
                 return responsAPI(404,'No data found','Data product dengan ID '+ id +' tidak ditemukan',res)
             }else{
-                return responsAPI(200,result,'Berhasil menghapus product',res)
+                db.query('DELETE FROM produk WHERE idProduk = ?', [id], (err, result) => {
+                    if(err){
+                        return responsAPI(500, 'Failed to delete product', 'Kegagalan menghapus produk', err)
+                    } else {
+                            return responsAPI(200,result,'Berhasil menghapus product',res)
+                    }
+                })
             }
         }
     })
